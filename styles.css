@@ -1,18 +1,22 @@
 .board-square {
   background-color: #3F7FBF;
   color: white;
-  border-radius: 5px;
-  font-size: 0.7em;
+  border-radius: 0.6rem;
+  font-size: 0.7rem;
+  /* outline-color: #8CB2D8;
+  outline-width: 0.5px;
+  outline-style: solid; */
 }
 
 .board {
+  border-radius: 0.6rem;
   padding: 10px;
   width: fit-content;
   background-color: grey;
   display: grid;
   grid-template-columns: repeat(10, 2.5em);
-  grid-auto-rows: 2.5em;
-  grid-gap: 0.2em;
+  grid-auto-rows: 2.5rem;
+  grid-gap: 0.2rem;
 }
 
 .board-header {
@@ -20,7 +24,7 @@
   grid-column-end: 3;
   grid-row-start: 1;
   grid-row-end: 2;
-  height: 1.5em;
+  height: 1.5rem;
 }
 
 .board-left  {
@@ -28,7 +32,7 @@
   grid-column-end: 2;
   grid-row-start: 2;
   grid-row-end: 3;
-  width: 1.5em
+  width: 1.5rem
 
 }
 
@@ -38,34 +42,35 @@
 
 .board-container {
   display: grid;
-  grid-template-columns: 1.5em 1fr;
+  grid-template-columns: 1.5rem 1fr;
   width: fit-content;
 }
 
 .carrier {
-  width: 10em;
+  width: 13rem;
 }
 
 .battleship {
-  width: 8em;
+  width: 8rem;
 }
 .cruiser {
-  width: 6em;
+  width: 6rem;
 }
 
 .submarine {
-  width: 6em;
+  width: 6rem;
 }
 
 .destroyer {
-  width: 4em;
+  width: 4rem;
 }
 
 .player {
-  height: 1.25em;
+  height: 1.5rem;
   background-color: grey;
-  border-radius: 0.75em;
+  color: black;
+  border-radius: 0.75rem;
   text-align: center;
-  font-size: 1.25em;
-
+  font-size: 1.25rem;
+  z-index: 1;
 }
