@@ -117,3 +117,20 @@ div {
   background-color: green;
   text-align: center;
 }
+
+.hit {
+  color: red;
+}
+
+.miss {
+  color: green;
+  font-weight: bold;
+}
+
+.attacks {
+  font-size: 3rem;
+  font-family: monospace;
+  position: relative;
+  top: -1rem;
+  left: 0.5rem;
+}

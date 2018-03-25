@@ -19,10 +19,20 @@ $(document).ready(function(){
 
   setShips($(".ship"), $("#player-board"), boardSize);
 
+
+  // testing attack stuff =====
+  areShipsReady(enemyShips, boardSize);
+  console.dir(enemyShips);
+  attack(enemyShips);
+  // ===========
+
   $("#begin").on("click", function(){
     // console.log(`Are ships ready? ${areShipsReady(ships, boardSize)}`);
     if(areShipsReady(ships, boardSize)){
+      areShipsReady(enemyShips, boardSize);
       logToTicker("Game On!");
+      attack(enemyShips);
+      console.dir(ships);
     } else {
       logToTicker("Hold on, your ships aren't in position");
     }
@@ -40,6 +50,34 @@ $(document).ready(function(){
   //   console.dir(`Mouse clicked cell ${colTag(data.column)}${data.row + 1} on enemy board`);
   // });
   // ===================
+
+
+  function attack(enemyShips){
+    $("#enemy-board").on("click", ".board-square", function(){
+      let data = $(this).data();
+      if(isHit(getSquareId(data.column, data.row), enemyShips)){
+        console.log("It's a hit!");
+        $("<div>").text("X").addClass("attacks hit").appendTo($(this));
+      } else {
+        $("<div>").text("O").addClass("attacks miss").appendTo($(this));
+      }
+      console.dir(`Mouse clicked cell ${colTag(data.column)}${data.row + 1} on enemy board`);
+      // $("#enemy-board").off("click", null);
+    });
+  }
+
+  function isHit(position, enemyShips){
+    let result = false;
+    enemyShips.forEach(function(ship){
+      for(square in ship.squares){
+        if(position == square){
+            ship.squares[square] = true;
+            result = true;
+        }
+      }
+    });
+    return result;
+  }
 
   function setShips(ship, board, boardSize){
     let currentShip = null;
@@ -85,7 +123,7 @@ $(document).ready(function(){
   function areShipsReady(ships, boardSize){
     let flag = true;
     ships.forEach(function(elm){
-      console.log(`checking ship ${elm.type}, position ${elm.position}. Is position valid? ${isShipPosValid(elm)}`);
+      // console.log(`checking ship ${elm.type}, position ${elm.position}. Is position valid? ${isShipPosValid(elm, boardSize)}`);
       if(isShipPosValid(elm, boardSize) == false){
         flag = false;
       }
@@ -104,17 +142,33 @@ $(document).ready(function(){
       return false;
     } else if(ship.angle === 0){
       if((ship.column + ship.length) <= boardSize){
+        addShipSquares()
         return true;
       }
     } else if(ship.angle === 90){
       if((ship.row + ship.length) <= boardSize){
+        addShipSquares()
         return true;
       }
     } else {
+      ship.squares = null;
       ship.position = null;
       ship.row = null;
       ship.column = null;
       return undefined;
+    }
+
+    function addShipSquares(){
+      ship.squares = {};
+      if(ship.angle === 0){
+        for(let colOffset = 0; colOffset < ship.length; colOffset++){
+          ship.squares[getSquareId(ship.row, ship.column + colOffset,)] = false;
+        }
+      } else if(ship.angle === 90){
+        for(let rowOffset = 0; rowOffset < ship.length; rowOffset++){
+          ship.squares[getSquareId(ship.row + rowOffset, ship.column)] = false;
+        }
+      }
     }
   }
 
@@ -181,8 +235,8 @@ $(document).ready(function(){
     }
   }
 
-  function getSquareId(i, j){
-    return `${colTag(j)}${i + 1}`
+  function getSquareId(row, column){
+    return `${colTag(column)}${row + 1}`
   }
 
 });
