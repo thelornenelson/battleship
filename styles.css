@@ -40,6 +40,14 @@
   transform: rotate(90deg);
 }
 
+.rotate180 {
+  transform: rotate(90deg);
+}
+
+.rotate270 {
+  transform: rotate(90deg);
+}
+
 .board-container {
   display: grid;
   grid-template-columns: 1.5rem 1fr;
@@ -47,22 +55,22 @@
 }
 
 .carrier {
-  width: 13rem;
+  width: 12.3rem;
 }
 
 .battleship {
-  width: 8rem;
+  width: 9.6rem;
 }
 .cruiser {
-  width: 6rem;
+  width: 6.9rem;
 }
 
 .submarine {
-  width: 6rem;
+  width: 6.9rem;
 }
 
 .destroyer {
-  width: 4rem;
+  width: 4.2rem;
 }
 
 .player {
@@ -70,7 +78,42 @@
   background-color: grey;
   color: black;
   border-radius: 0.75rem;
+  border: solid 1px black;
   text-align: center;
-  font-size: 1.25rem;
+  font-size: 0.9rem;
   z-index: 1;
+  position: relative;
+  padding-top: 0.25em;
+  display: inline-block;
+}
+
+.shipyard {
+  width: 10rem;
+  display: inline-block;
+}
+
+.ship-position {
+  position: relative;
+  left:  0.5rem;
+  top:   0rem;
+}
+
+div {
+    box-sizing: border-box;
+}
+
+.inline {
+  display: inline-block;
+}
+
+.console {
+  font-family: monospace;
+}
+
+.button {
+  height: 25px;
+  width: 50px;
+  border-radius: 5px;
+  background-color: green;
+  text-align: center;
 }

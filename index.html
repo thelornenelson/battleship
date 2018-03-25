@@ -6,22 +6,36 @@
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <div id="player-board" class="board-container">
-      <div class="board-header">My Board</div>
-      <div class="board-left">L<br />e<br />f<br />t<br /></div>
-      <div class="board">[Placeholder for Player's Board]</div>
+    <div>
+      <div class="inline">
+        <div id="player-board" class="board-container">
+          <div class="board-header">My Board</div>
+          <div class="board-left"></div>
+          <div class="board">[Placeholder for Player's Board]</div>
+        </div>
+      </div>
+      <div class="inline">
+        <div id="enemy-board" class="board-container">
+          <div class="board-header">Enemy Board</div>
+          <div class="board-left"></div>
+          <div class="board">[Placeholder for Enemy's Board]</div>
+        </div>
+      </div>
     </div>
-    <hr />
-    <div id="enemy-board" class="board-container">
-      <div class="board-header">Enemy Board</div>
-      <div class="board-left">L<br />e<br />f<br />t<br /></div>
-      <div class="board">[Placeholder for Enemy's Board]</div>
+    <div class="commands">
+      <div id="begin" class="button">Begin</div>
     </div>
-    <div data-ship-id="0" class="player ship carrier">CARRIER</div>
-    <div data-ship-id="1" class="player ship battleship">BATTLESHIP</div>
-    <div data-ship-id="2" class="player ship cruiser">CRUISER</div>
-    <div data-ship-id="3" class="player ship submarine">SUBM</div>
-    <div data-ship-id="4" class="player ship destroyer">DEST</div>
+    <div class="console">
+      <div>Place your ships and click "begin" when ready.</div>
+      <div>WELCOME TO BATTLESHIP</div>
+    </div>
+    <div class="shipyard">
+      <div data-ship-id="0" class="player ship carrier">Aircraft Carrier</div>
+      <div data-ship-id="1" class="player ship battleship">Battleship</div>
+      <div data-ship-id="2" class="player ship cruiser">Cruiser</div>
+      <div data-ship-id="3" class="player ship submarine">Submarine</div>
+      <div data-ship-id="4" class="player ship destroyer">Destroyer</div>
+    </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="battleship.js"></script>
