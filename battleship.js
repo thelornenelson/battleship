@@ -1,6 +1,7 @@
 $(document).ready(function(){
 
-  const ships = [{ type: "carrier", length: 5, position: null, row: null, column: null, angle: 0},
+  // arrays of ships for player and enemy, for position and hit tracking
+  const myShips = [{ type: "carrier", length: 5, position: null, row: null, column: null, angle: 0},
     { type: "battleship", length: 4, position: null, row: null, column: null, angle: 0 },
     { type: "cruiser", length: 3, position: null, row: null, column: null, angle: 0 },
     { type: "submarine", length: 3, position: null, row: null, column: null, angle: 0 },
@@ -12,33 +13,36 @@ $(document).ready(function(){
     { type: "submarine", length: 3, position: "A4", row: 3, column: 0, angle: 0 },
     { type: "destroyer", length: 2, position: "A5", row: 4, column: 0, angle: 0 } ];
 
+  // set size of board (boardSize x boardSize squares)
+  // accessed directly by many functions.
   let boardSize = 10;
 
-  createBoard(boardSize, $("#player-board").find(".board"));
-  createBoard(boardSize, $("#enemy-board").find(".board"));
+  // generate player board and enemy board/shot tracker and insert into DOM
+  createBoard($("#player-board").find(".board"), "player-");
+  createBoard($("#enemy-board").find(".board"), "enemy-");
 
-  setShips($(".ship"), $("#player-board"), boardSize);
+  // initiate player ship placement (allow click and move on ships)
+  setShips($(".ship"), $("#player-board"));
 
-
-  // testing attack stuff =====
-  areShipsReady(enemyShips, boardSize);
-  console.dir(enemyShips);
-  attack(enemyShips);
-  // ===========
-
+  // when player clicks begin, start game if ships are ready, otherwise give further instruction.
   $("#begin").on("click", function(){
-    // console.log(`Are ships ready? ${areShipsReady(ships, boardSize)}`);
-    if(areShipsReady(ships, boardSize)){
-      areShipsReady(enemyShips, boardSize);
+    if(areShipsReady(myShips)){
+      areShipsReady(enemyShips);
       logToTicker("Game On!");
-      attack(enemyShips);
-      console.dir(ships);
+
+      attack();
     } else {
       logToTicker("Hold on, your ships aren't in position");
     }
   });
 
+  // testing attack stuff =====
+  // areShipsReady(enemyShips);
+  // // console.dir(enemyShips);
+  // attack();
+  // testing randomSquare();
 
+  // ===========
 // ===================== for debugging
   // $("#player-board").on("click", ".board-square", function(){
   //   let data = $(this).data();
@@ -51,36 +55,71 @@ $(document).ready(function(){
   // });
   // ===================
 
+  // function to handle player's attack turn.
+  function attack(){
 
-  function attack(enemyShips){
+    logToTicker("Pick a target square.");
+
     $("#enemy-board").on("click", ".board-square", function(){
-      let data = $(this).data();
-      if(isHit(getSquareId(data.column, data.row), enemyShips)){
-        console.log("It's a hit!");
-        $("<div>").text("X").addClass("attacks hit").appendTo($(this));
-      } else {
-        $("<div>").text("O").addClass("attacks miss").appendTo($(this));
-      }
-      console.dir(`Mouse clicked cell ${colTag(data.column)}${data.row + 1} on enemy board`);
-      // $("#enemy-board").off("click", null);
+      markAttack($(this), enemyShips);
+      console.dir(`Mouse clicked cell ${colTag($(this).data().column)}${$(this).data().row + 1} on enemy board`);
+      $("#enemy-board").off("click", null);
+      enemyAttack()
     });
   }
 
-  function isHit(position, enemyShips){
+  // when called, AI will determine where to attack, determine result of attack, and plot results of attack on your board.
+  function enemyAttack(){
+    let target = randomSquare();
+    logToTicker(`Enemy attacks ${getSquareId(target.row, target.column)}`);
+    markAttack($(`#player-${getSquareId(target.row, target.column)}`), myShips);
+    attack();
+  }
+
+  //marks attack on targetSquare, which should be a jquery element object
+  //targetShips is the array of ships, hits are logged to it.
+  function markAttack(targetSquare, targetShips){
+    if(targetSquare.children(".attacks").length === 0){
+      let hasShip = "";
+      //check if the target square has a ship node in it and if so, add offset to get mark displayed correctly.
+      if(targetSquare.children(".player").length){
+        hasShip = "attack-ship-offset";
+      }
+      let data = targetSquare.data();
+      //check to see if there's already an attack marked on the square
+      // If not, add new hit or miss
+      if(isHit(getSquareId(data.row, data.column), targetShips)){
+        console.log("It's a hit!");
+        $("<div>").text("X").addClass(`attacks hit ${hasShip}`).appendTo(targetSquare);
+      } else {
+        console.log("Miss!");
+        $("<div>").text("O").addClass(`attacks miss ${hasShip}`).appendTo(targetSquare);
+      }
+    }
+  }
+
+  // check if square (in A1 format) is a hit on any of ships in ships array.
+  function isHit(position, ships){
     let result = false;
-    enemyShips.forEach(function(ship){
+    console.log("checking for hit on position " + position);
+    console.dir(ships);
+    ships.forEach(function(ship){
       for(square in ship.squares){
         if(position == square){
+            console.log(`${ship.type} hit in square ${square}, position ${position}`);
             ship.squares[square] = true;
             result = true;
         }
       }
     });
+
     return result;
+
   }
 
-  function setShips(ship, board, boardSize){
+  function setShips(ship, board){
     let currentShip = null;
+
     let shipClickHandler = function(){
       console.log(`Handling click on ship ${$(this).data().shipId}`);
       currentShip = $(this);
@@ -100,15 +139,15 @@ $(document).ready(function(){
       if(currentShip){
         let data = $(this).data();
         let id = getSquareId(data.row, data.column);
-        ships[currentShip.data().shipId].position = id;
-        ships[currentShip.data().shipId].row = data.row;
-        ships[currentShip.data().shipId].column = data.column;
+        myShips[currentShip.data().shipId].position = id;
+        myShips[currentShip.data().shipId].row = data.row;
+        myShips[currentShip.data().shipId].column = data.column;
         if(currentShip.hasClass("rotate90")){
-          ships[currentShip.data().shipId].angle = 90;
+          myShips[currentShip.data().shipId].angle = 90;
         }
-        if(isShipPosValid(ships[currentShip.data().shipId], boardSize)){
-          console.log(`placed ${ships[currentShip.data().shipId].type} in square ${colTag(data.column)}${data.row + 1}`);
-          fix(currentShip, $(`#${id}`));
+        if(isShipPosValid(myShips[currentShip.data().shipId])){
+          console.log(`placed ${myShips[currentShip.data().shipId].type} in square ${colTag(data.column)}${data.row + 1}`);
+          fix(currentShip, $(this));
           currentShip = null;
           ship.on("click", shipClickHandler);
         }
@@ -116,26 +155,29 @@ $(document).ready(function(){
     })
   }
 
+  // logs message to the on-screen "console", for giving instructions or updating on
+  // game progress.
   function logToTicker(message){
     $("<div>").text(message).prependTo($(".console"));
   }
 
-  function areShipsReady(ships, boardSize){
+  // checks whether all ships are in valid position.
+  function areShipsReady(ships){
     let flag = true;
-    ships.forEach(function(elm){
-      // console.log(`checking ship ${elm.type}, position ${elm.position}. Is position valid? ${isShipPosValid(elm, boardSize)}`);
-      if(isShipPosValid(elm, boardSize) == false){
+
+    ships.forEach(function(ship){
+      if(isShipPosValid(ship) == false){
         flag = false;
       }
     });
 
     return flag ? true : false;
+
   }
 
   // checks to make sure ship will fit on board based on row/column/length.
-  // If yes, return true. If not,
-  // sets position, row, and column to null and returns undefined.
-  function isShipPosValid(ship, boardSize){
+  // If yes, return true. If not, sets position, row, and column to null and returns undefined.
+  function isShipPosValid(ship){
     // console.log(`position: ${ship.position}, row ${ship.row}, column ${ship.column}`);
     if(ship.position === null || ship.row === null || ship.column === null){
       // console.log(`isShipPosValid returning false`);
@@ -158,6 +200,8 @@ $(document).ready(function(){
       return undefined;
     }
 
+    // adds squares occupied by ship to ship.squares object with
+    // square positions (A1, K5, etc) as keys with value false (ie not hit);
     function addShipSquares(){
       ship.squares = {};
       if(ship.angle === 0){
@@ -172,11 +216,12 @@ $(document).ready(function(){
     }
   }
 
+  // return offset corrections to shift ship to cursor when rotated
   function calcRotationPositionCorr(elm){
     return {xCorr: elm.width() / -2, yCorr: elm.width() / 2 };
   }
 
-// ties jQuery object elm to the mouse cursor
+  // ties jQuery object elm to move with the mouse cursor
   function move(elm){
     $(document).on("mousemove", function(w){
       //check if element is rotated, and apply position corrections
@@ -195,31 +240,34 @@ $(document).ready(function(){
     });
   }
 
-// fixes element at current position and unbinds mousemove event
+  // fixes element at current position by appending to parent and unbinds mousemove event
   function fix(elm, parent){
     $(document).off("mousemove", null);
     $(document).off("keydown", null);
 
     elm.appendTo(parent);
     elm.removeAttr("style");
+
     if(elm.hasClass("rotate90")){
       let corr = calcRotationPositionCorr(elm);
+      // if ship is rotated, we need to calculate and set a custom relative position depending on element length.
       elm.css({
         position: "relative",
         left:  corr.xCorr + 24,
         top:   corr.yCorr - 16
       });
     } else {
+      // adds class describing default relative positioning required to align ships on the board
       elm.addClass("ship-position");
     }
   }
 
   // created div elements for size x size board and replaces elm with newly generated board
-  function createBoard(size, elm){
-    let board = $("<div>").addClass("board").css({"grid-template-columns": `repeat(${size}, 2.5em)`});
-    for(let i = 0; i < size; i++){
-      for(let j = 0; j < size; j++){
-        $("<div>").attr("id", `${colTag(j)}${i + 1}`).text(`${colTag(j)}${i + 1}`).data({column: j, row: i}).addClass("board-square").appendTo(board);
+  function createBoard(elm, idPrefix){
+    let board = $("<div>").addClass("board").css({"grid-template-columns": `repeat(${boardSize}, 2.5em)`});
+    for(let i = 0; i < boardSize; i++){
+      for(let j = 0; j < boardSize; j++){
+        $("<div>").attr("id", `${idPrefix}${colTag(j)}${i + 1}`).text(`${colTag(j)}${i + 1}`).data({column: j, row: i}).addClass("board-square").appendTo(board);
       }
     }
     elm.replaceWith(board);
@@ -235,8 +283,21 @@ $(document).ready(function(){
     }
   }
 
+  // returns square ID in A1, B5, C10, etc format.
   function getSquareId(row, column){
     return `${colTag(column)}${row + 1}`
+  }
+
+  // returns an object of format {row: [0-boardSize], column: [0-boardSize]}
+  // where row and column values are picked randomly.
+  function randomSquare(){
+    const square = { row: null, column: null };
+
+    for(axis in square){
+      square[axis] = Math.floor(Math.random() * boardSize);
+    }
+
+    return square;
   }
 
 });

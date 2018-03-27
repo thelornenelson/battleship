@@ -133,4 +133,10 @@ div {
   position: relative;
   top: -1rem;
   left: 0.5rem;
+  z-index: 2;
+}
+
+/*  this is used to offset the attack mark correctly when there's a ship positioned in the same square */
+.attack-ship-offset {
+  top: -2.5rem;
 }
