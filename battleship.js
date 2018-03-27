@@ -1,17 +1,17 @@
 $(document).ready(function(){
 
   // arrays of ships for player and enemy, for position and hit tracking
-  const myShips = [{ type: "carrier", length: 5, position: null, row: null, column: null, angle: 0},
-    { type: "battleship", length: 4, position: null, row: null, column: null, angle: 0 },
-    { type: "cruiser", length: 3, position: null, row: null, column: null, angle: 0 },
-    { type: "submarine", length: 3, position: null, row: null, column: null, angle: 0 },
-    { type: "destroyer", length: 2, position: null, row: null, column: null, angle: 0 } ];
+  const myShips = [{ type: "Carrier", length: 5, position: null, row: null, column: null, angle: 0},
+    { type: "Battleship", length: 4, position: null, row: null, column: null, angle: 0 },
+    { type: "Cruiser", length: 3, position: null, row: null, column: null, angle: 0 },
+    { type: "Submarine", length: 3, position: null, row: null, column: null, angle: 0 },
+    { type: "Destroyer", length: 2, position: null, row: null, column: null, angle: 0 } ];
 
-  const enemyShips = [{ type: "carrier", length: 5, position: "A1", row: 0, column: 0, angle: 0},
-    { type: "battleship", length: 4, position: "A2", row: 1, column: 0, angle: 0 },
-    { type: "cruiser", length: 3, position: "A3", row: 2, column: 0, angle: 0 },
-    { type: "submarine", length: 3, position: "A4", row: 3, column: 0, angle: 0 },
-    { type: "destroyer", length: 2, position: "A5", row: 4, column: 0, angle: 0 } ];
+  const enemyShips = [{ type: "Carrier", length: 5, position: "A1", row: 0, column: 0, angle: 0},
+    { type: "Battleship", length: 4, position: "A2", row: 1, column: 0, angle: 0 },
+    { type: "Cruiser", length: 3, position: "A3", row: 2, column: 0, angle: 0 },
+    { type: "Submarine", length: 3, position: "A4", row: 3, column: 0, angle: 0 },
+    { type: "Destroyer", length: 2, position: "A5", row: 4, column: 0, angle: 0 } ];
 
   // set size of board (boardSize x boardSize squares)
   // accessed directly by many functions.
@@ -62,7 +62,7 @@ $(document).ready(function(){
 
     $("#enemy-board").on("click", ".board-square", function(){
       markAttack($(this), enemyShips);
-      console.dir(`Mouse clicked cell ${colTag($(this).data().column)}${$(this).data().row + 1} on enemy board`);
+      // console.dir(`Mouse clicked cell ${colTag($(this).data().column)}${$(this).data().row + 1} on enemy board`);
       $("#enemy-board").off("click", null);
       enemyAttack()
     });
@@ -79,6 +79,7 @@ $(document).ready(function(){
   //marks attack on targetSquare, which should be a jquery element object
   //targetShips is the array of ships, hits are logged to it.
   function markAttack(targetSquare, targetShips){
+    // checks to make sure square hasn't already been attacked. If it has, ignore the attack.
     if(targetSquare.children(".attacks").length === 0){
       let hasShip = "";
       //check if the target square has a ship node in it and if so, add offset to get mark displayed correctly.
@@ -88,7 +89,7 @@ $(document).ready(function(){
       let data = targetSquare.data();
       //check to see if there's already an attack marked on the square
       // If not, add new hit or miss
-      if(isHit(getSquareId(data.row, data.column), targetShips)){
+      if(checkHit(getSquareId(data.row, data.column), targetShips)){
         console.log("It's a hit!");
         $("<div>").text("X").addClass(`attacks hit ${hasShip}`).appendTo(targetSquare);
       } else {
@@ -96,19 +97,46 @@ $(document).ready(function(){
         $("<div>").text("O").addClass(`attacks miss ${hasShip}`).appendTo(targetSquare);
       }
     }
+
   }
 
   // check if square (in A1 format) is a hit on any of ships in ships array.
-  function isHit(position, ships){
+  // if so, mark square true in ship.squares[position]
+  function checkHit(position, ships){
     let result = false;
-    console.log("checking for hit on position " + position);
-    console.dir(ships);
+    // console.log("checking for hit on position " + position);
+    // console.dir(ships);
     ships.forEach(function(ship){
       for(square in ship.squares){
         if(position == square){
-            console.log(`${ship.type} hit in square ${square}, position ${position}`);
+
+          //if square hasn't been hit yet (ie check for repeat hits)
+          if(ship.squares[square] === false){
+            //mark target square as hit
             ship.squares[square] = true;
+
+            //check to see if ship has now sunk
+            let sunk = true;
+            for(square in ship.squares){
+              //check to see if any of the squares is false (ie not sunk).
+              if(ship.squares[square] === false){
+                sunk = false;
+              }
+            }
+
+            if(sunk){
+              ship.isSunk = true;
+              console.log(`${ship.type} hit in square ${square}, position ${position}, and it sinks!`);
+              logToTicker(`${ship.type} has sunk`);
+            }
+
+            console.log(`${ship.type} hit in square ${square}, position ${position}`);
             result = true;
+
+          } else {
+            console.log(`Repeat hit on ${ship.type} in square ${square}, position ${position}`)
+            result = false;
+          }
         }
       }
     });
@@ -117,14 +145,16 @@ $(document).ready(function(){
 
   }
 
-  function setShips(ship, board){
+  function setShips(ships, board){
     let currentShip = null;
 
-    let shipClickHandler = function(){
+    let shipClickHandler = function(event){
       console.log(`Handling click on ship ${$(this).data().shipId}`);
       currentShip = $(this);
       $(".ship").off("click", null);
       move(currentShip);
+      event.stopPropagation();
+      board.on("click", ".board-square", boardClickHandler);
       $(document).on("keydown", function(event){
         if(event.which == 82){
           currentShip.toggleClass("rotate90");
@@ -133,9 +163,7 @@ $(document).ready(function(){
       });
     };
 
-    ship.on("click", shipClickHandler);
-
-    board.on("click", ".board-square", function(){
+    let boardClickHandler = function(){
       if(currentShip){
         let data = $(this).data();
         let id = getSquareId(data.row, data.column);
@@ -148,11 +176,16 @@ $(document).ready(function(){
         if(isShipPosValid(myShips[currentShip.data().shipId])){
           console.log(`placed ${myShips[currentShip.data().shipId].type} in square ${colTag(data.column)}${data.row + 1}`);
           fix(currentShip, $(this));
+          board.off("click");
           currentShip = null;
-          ship.on("click", shipClickHandler);
+          ships.on("click", shipClickHandler);
         }
       }
-    })
+    };
+
+    ships.on("click", shipClickHandler);
+
+    board.on("click", ".board-square", boardClickHandler);
   }
 
   // logs message to the on-screen "console", for giving instructions or updating on
@@ -203,6 +236,7 @@ $(document).ready(function(){
     // adds squares occupied by ship to ship.squares object with
     // square positions (A1, K5, etc) as keys with value false (ie not hit);
     function addShipSquares(){
+      ship.isSunk = false;
       ship.squares = {};
       if(ship.angle === 0){
         for(let colOffset = 0; colOffset < ship.length; colOffset++){
