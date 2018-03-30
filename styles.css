@@ -1,3 +1,8 @@
+body {
+  padding: 0;
+  background-color: #dcdfe1;
+}
+
 .board-square {
   background-color: #3F7FBF;
   color: white;
@@ -10,6 +15,7 @@
 
 .board {
   border-radius: 0.6rem;
+  border: solid black 1px;
   padding: 10px;
   width: fit-content;
   background-color: grey;
@@ -25,6 +31,7 @@
   grid-row-start: 1;
   grid-row-end: 2;
   height: 1.5rem;
+  text-align: center;
 }
 
 .board-left  {
@@ -37,14 +44,6 @@
 }
 
 .rotate90 {
-  transform: rotate(90deg);
-}
-
-.rotate180 {
-  transform: rotate(90deg);
-}
-
-.rotate270 {
   transform: rotate(90deg);
 }
 
@@ -73,7 +72,12 @@
   width: 4.2rem;
 }
 
-.player {
+.enemy {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.ship {
   height: 1.5rem;
   background-color: grey;
   color: black;
@@ -88,7 +92,7 @@
 }
 
 .shipyard {
-  width: 10rem;
+  /* width: 10rem; */
   display: inline-block;
 }
 
@@ -102,20 +106,47 @@ div {
     box-sizing: border-box;
 }
 
+div.boards {
+  margin: auto;
+}
+
 .inline {
   display: inline-block;
 }
 
 .console {
+  max-height: 10rem;
   font-family: monospace;
+  background-color: #eee3c3;
+  padding: 1em 2em;
+  margin: 2em;
+  border: solid black 1px;
+  border-radius: 5px 5px 0 0;
+  overflow: scroll;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.commands {
+  padding: 0.5em;
 }
 
 .button {
-  height: 25px;
-  width: 50px;
+  height: 2rem;
+  width: 6rem;
   border-radius: 5px;
   background-color: green;
   text-align: center;
+  line-height: 2rem;
+  border: 1px solid black;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.button:hover {
+  font-weight: bold;
 }
 
 .hit {

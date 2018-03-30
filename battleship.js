@@ -7,11 +7,11 @@ $(document).ready(function(){
     { type: "Submarine", length: 3, position: null, row: null, column: null, angle: 0 },
     { type: "Destroyer", length: 2, position: null, row: null, column: null, angle: 0 } ];
 
-  const enemyShips = [{ type: "Carrier", length: 5, position: "A1", row: 0, column: 0, angle: 0},
-    { type: "Battleship", length: 4, position: "A2", row: 1, column: 0, angle: 0 },
-    { type: "Cruiser", length: 3, position: "A3", row: 2, column: 0, angle: 0 },
-    { type: "Submarine", length: 3, position: "A4", row: 3, column: 0, angle: 0 },
-    { type: "Destroyer", length: 2, position: "A5", row: 4, column: 0, angle: 0 } ];
+  const enemyShips = [{ type: "Carrier", length: 5, position: null, row: 0, column: 0, angle: 0},
+    { type: "Battleship", length: 4, position: null, row: 1, column: 0, angle: 0 },
+    { type: "Cruiser", length: 3, position: null, row: 2, column: 0, angle: 0 },
+    { type: "Submarine", length: 3, position: null, row: 3, column: 0, angle: 0 },
+    { type: "Destroyer", length: 2, position: null, row: 4, column: 0, angle: 0 } ];
 
   // set size of board (boardSize x boardSize squares)
   // accessed directly by many functions.
@@ -22,14 +22,21 @@ $(document).ready(function(){
   createBoard($("#enemy-board").find(".board"), "enemy-");
 
   // initiate player ship placement (allow click and move on ships)
-  setShips($(".ship"), $("#player-board"));
+  setPlayerShips($(".ship"), $("#player-board"));
+
+  randomSetShips(enemyShips, "enemy");
+
+  $("#randomize").on("click", function(){
+    randomSetShips(myShips, "player");
+  });
 
   // when player clicks begin, start game if ships are ready, otherwise give further instruction.
   $("#begin").on("click", function(){
     if(areShipsReady(myShips)){
       areShipsReady(enemyShips);
+      $("#begin").remove();
+      $("#randomize").remove();
       logToTicker("Game On!");
-
       attack();
     } else {
       logToTicker("Hold on, your ships aren't in position");
@@ -55,6 +62,94 @@ $(document).ready(function(){
   // });
   // ===================
 
+
+  // function to place ships at random on board
+  function randomSetShips(ships, player){
+    let possibleAngles = [0, 90];
+    ships.forEach(function(ship, index){
+
+      // assume invalid
+      let shipValid = false;
+
+      // loop until ship is placed in valid position. "Throw them until they stick!"
+      while(!shipValid){
+
+        // reset any previous attempt
+        ship.position = null;
+        ship.row = null;
+        ship.column = null;
+        ship.squares = null;
+
+        // pick angle by random array index
+        ship.angle = possibleAngles[Math.floor(Math.random() * 2)];
+
+        // determine position limits based on ship length/angle
+        let maxRow = ship.angle === 90 ? boardSize - ship.length - 1 : boardSize - 1;
+        let maxColumn = ship.angle === 0 ? boardSize - ship.length - 1 : boardSize - 1;
+        let square = randomSquare(maxRow, maxColumn);
+        ship.row = square.row;
+        ship.column = square.column;
+        ship.position = getSquareId(square.row, square.column);
+
+        // this should always be valid due to the limits on our placement, but also initializes a bunch of ship data
+        shipValid = isShipPosValid(ship);
+
+        // now check ship position against all other ships, to make sure there's no interference.
+        ships.forEach(function(checkShip, checkIndex){
+          if(index !== checkIndex){
+            // don't check ship against itself
+
+            for(square in ship.squares){
+              //iterate across squares for current ship (ship being placed)
+
+              if(checkShip.squares){
+                // check if squares key exists and is non-false
+
+                if(checkShip.squares[square] !== undefined){
+                  // if key square exists on checkShip, then we have interference. Try again!
+                  shipValid = false;
+
+                }
+              }
+            }
+          }
+        });
+      }
+
+      if(player === "enemy"){
+        let $ship = makeShip(ship.type, "enemy", ship.angle);
+        // console.log(`fixing enemy ${ship.type}`);
+        console.log(`placed enemy ${ship.type} at position ${ship.position} angle ${ship.angle}`);
+        fix($ship, $(`#enemy-${ship.position}`))
+
+      } else {
+        // select ship DOM element
+        let $ship = $(`.player.ship.${ship.type.toLowerCase()}`)
+
+        // remove any previous rotation class
+        $ship.removeClass("rotate90");
+
+        // rotate element if required
+        if(ship.angle === 90){
+          $ship.addClass("rotate90");
+        }
+        // fix element in position
+        fix($ship, $(`#player-${ship.position}`));
+        // console.log(`placed ${ship.type} at position ${ship.position} angle ${ship.angle}`);
+      }
+    });
+  }
+
+  function makeShip(type, player, angle){
+    let ship = $("<div>");
+    ship.addClass(`${player} ship ${type.toLowerCase()}`);
+    ship.text(type);
+    if(angle === 90){
+      ship.addClass("rotate90");
+    }
+    return ship;
+  }
+
   // function to handle player's attack turn.
   function attack(){
 
@@ -70,7 +165,7 @@ $(document).ready(function(){
 
   // when called, AI will determine where to attack, determine result of attack, and plot results of attack on your board.
   function enemyAttack(){
-    let target = randomSquare();
+    let target = randomSquare(6,6);
     logToTicker(`Enemy attacks ${getSquareId(target.row, target.column)}`);
     markAttack($(`#player-${getSquareId(target.row, target.column)}`), myShips);
     attack();
@@ -83,7 +178,7 @@ $(document).ready(function(){
     if(targetSquare.children(".attacks").length === 0){
       let hasShip = "";
       //check if the target square has a ship node in it and if so, add offset to get mark displayed correctly.
-      if(targetSquare.children(".player").length){
+      if(targetSquare.children(".ship").length){
         hasShip = "attack-ship-offset";
       }
       let data = targetSquare.data();
@@ -127,7 +222,7 @@ $(document).ready(function(){
             if(sunk){
               ship.isSunk = true;
               console.log(`${ship.type} hit in square ${square}, position ${position}, and it sinks!`);
-              logToTicker(`${ship.type} has sunk`);
+              logToTicker(`${ship.type} has sunk`, true);
             }
 
             console.log(`${ship.type} hit in square ${square}, position ${position}`);
@@ -145,7 +240,7 @@ $(document).ready(function(){
 
   }
 
-  function setShips(ships, board){
+  function setPlayerShips(ships, board){
     let currentShip = null;
 
     let shipClickHandler = function(event){
@@ -190,8 +285,13 @@ $(document).ready(function(){
 
   // logs message to the on-screen "console", for giving instructions or updating on
   // game progress.
-  function logToTicker(message){
-    $("<div>").text(message).prependTo($(".console"));
+  function logToTicker(message, important){
+
+    let $message = $("<div>").text(message);
+    if(important){
+      $message.addClass("bold");
+    }
+    $message.prependTo($(".console"));
   }
 
   // checks whether all ships are in valid position.
@@ -236,7 +336,10 @@ $(document).ready(function(){
     // adds squares occupied by ship to ship.squares object with
     // square positions (A1, K5, etc) as keys with value false (ie not hit);
     function addShipSquares(){
+
+      // adds isSunk key, used to track ships sinking
       ship.isSunk = false;
+
       ship.squares = {};
       if(ship.angle === 0){
         for(let colOffset = 0; colOffset < ship.length; colOffset++){
@@ -322,14 +425,15 @@ $(document).ready(function(){
     return `${colTag(column)}${row + 1}`
   }
 
-  // returns an object of format {row: [0-boardSize], column: [0-boardSize]}
+  // returns an object of format {row: [0-boardSize), column: [0-boardSize)}
   // where row and column values are picked randomly.
-  function randomSquare(){
+  // optional paramters will place randomly within a limited area (handy for placing ships with known length)
+  // maxRow and maxColumn are 0 indexed
+  function randomSquare(maxRow, maxColumn){
     const square = { row: null, column: null };
 
-    for(axis in square){
-      square[axis] = Math.floor(Math.random() * boardSize);
-    }
+    square.row = Math.floor(Math.random() * ((maxRow + 1) || boardSize));
+    square.column = Math.floor(Math.random() * ((maxColumn + 1) || boardSize));
 
     return square;
   }
