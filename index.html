@@ -3,16 +3,17 @@
   <head>
     <meta charset="utf-8">
     <title>Battleship</title>
+    <link href="https://fonts.googleapis.com/css?family=Anonymous+Pro|Roboto" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
       <div class="main-grid">
         <div id="player-board" class="board-container">
-          <div class="board-header">My Board</div>
+          <div class="board-header">My Fleet</div>
           <div class="board">[Placeholder for Player's Board]</div>
         </div>
         <div id="enemy-board" class="board-container">
-          <div class="board-header">Enemy Board</div>
+          <div class="board-header">Target Board</div>
           <div class="board">[Placeholder for Enemy's Board]</div>
         </div>
         <div class="commands">
@@ -20,11 +21,11 @@
           <div id="randomize" class="button">Randomize</div>
         </div>
         <div class="shipyard">
-          <div data-ship-id="0" class="player ship carrier initial-size">Carrier</div>
-          <div data-ship-id="1" class="player ship battleship initial-size">Battleship</div>
-          <div data-ship-id="2" class="player ship cruiser initial-size">Cruiser</div>
-          <div data-ship-id="3" class="player ship submarine initial-size">Submarine</div>
-          <div data-ship-id="4" class="player ship destroyer initial-size">Destroyer</div>
+          <div data-ship-id="0" class="player ship carrier initial-size movable">Carrier</div>
+          <div data-ship-id="1" class="player ship battleship initial-size movable">Battleship</div>
+          <div data-ship-id="2" class="player ship cruiser initial-size movable">Cruiser</div>
+          <div data-ship-id="3" class="player ship submarine initial-size movable">Submarine</div>
+          <div data-ship-id="4" class="player ship destroyer initial-size movable">Destroyer</div>
         </div>
         <div class="console">
           <div>Place your ships and click "begin" when ready.</div>
