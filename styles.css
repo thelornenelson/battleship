@@ -27,30 +27,40 @@ body {
 
 .board-header {
   grid-column-start: 1;
-  grid-column-end: 3;
+  grid-column-end: 2;
   grid-row-start: 1;
   grid-row-end: 2;
   height: 1.5rem;
   text-align: center;
 }
 
-.board-left  {
+/* .board-left  {
   grid-column-start: 1;
   grid-column-end: 2;
   grid-row-start: 2;
   grid-row-end: 3;
   width: 1.5rem
 
-}
+} */
 
 .rotate90 {
   transform: rotate(90deg);
 }
 
 .board-container {
+  justify-self: center;
   display: grid;
-  grid-template-columns: 1.5rem 1fr;
+  grid-template-columns: 1fr;
   width: fit-content;
+  margin: 0.5em 0.75em;
+}
+
+#player-board {
+  grid-area: player-board;
+}
+
+#enemy-board {
+  grid-area: enemy-board;
 }
 
 .carrier {
@@ -88,12 +98,15 @@ body {
   z-index: 1;
   position: relative;
   padding-top: 0.25em;
-  display: inline-block;
 }
 
 .shipyard {
-  /* width: 10rem; */
-  display: inline-block;
+  grid-area: shipyard;
+  justify-self: right;
+}
+
+.shipyard .ship.initial-size {
+  width: 5rem;
 }
 
 .ship-position {
@@ -106,15 +119,27 @@ div {
     box-sizing: border-box;
 }
 
-div.boards {
+.main-grid {
+  padding: 2rem;
+  display: grid;
   margin: auto;
+  grid-template-columns: 100px repeat(2, 1fr);
+  /* grid-template-areas: "player-board enemy-board"
+                        "commands commands"
+                        "shipyard shipyard"
+                        "console console"; */
+  grid-template-areas: "commands player-board enemy-board"
+                        "shipyard player-board enemy-board"
+                        ". console console";
 }
 
-.inline {
+
+/* .inline {
   display: inline-block;
-}
+} */
 
 .console {
+  height: 10rem;
   max-height: 10rem;
   font-family: monospace;
   background-color: #eee3c3;
@@ -123,6 +148,8 @@ div.boards {
   border: solid black 1px;
   border-radius: 5px 5px 0 0;
   overflow: scroll;
+  grid-area: console;
+  grid-column-start: 2;
 }
 
 .bold {
@@ -130,7 +157,10 @@ div.boards {
 }
 
 .commands {
-  padding: 0.5em;
+  padding: 5rem 0rem 1rem 1rem;
+  grid-area: commands;
+  justify-self: right;
+
 }
 
 .button {
@@ -141,7 +171,7 @@ div.boards {
   text-align: center;
   line-height: 2rem;
   border: 1px solid black;
-  display: inline-block;
+  /* display: inline-block; */
   cursor: pointer;
 }
 
@@ -170,4 +200,53 @@ div.boards {
 /*  this is used to offset the attack mark correctly when there's a ship positioned in the same square */
 .attack-ship-offset {
   top: -2.5rem;
+}
+
+@media (max-width: 1070px) {
+  .main-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "player-board enemy-board"
+    "commands shipyard"
+    "console console";
+  }
+
+  .console {
+    grid-column-start: 1;
+  }
+
+  .ship, .button {
+    display: inline-block;
+  }
+
+  .commands {
+    justify-self: center;
+    padding-top: 1rem;
+  }
+
+  .shipyard {
+    justify-self: center;
+  }
+}
+
+@media (max-width: 1000px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas: "player-board"
+    "enemy-board"
+    "commands"
+    "shipyard"
+    "console";
+  }
+/*
+  .console {
+    grid-column-start: 1;
+  }
+
+  .ship, .button {
+    display: inline-block;
+  }
+
+  .commands {
+    padding-top: 1rem;
+  } */
 }

@@ -6,37 +6,31 @@
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <div class="boards">
-      <div class="inline">
+      <div class="main-grid">
         <div id="player-board" class="board-container">
           <div class="board-header">My Board</div>
-          <div class="board-left"></div>
           <div class="board">[Placeholder for Player's Board]</div>
         </div>
-      </div>
-      <div class="inline">
         <div id="enemy-board" class="board-container">
           <div class="board-header">Enemy Board</div>
-          <div class="board-left"></div>
           <div class="board">[Placeholder for Enemy's Board]</div>
         </div>
+        <div class="commands">
+          <div id="begin" class="button">Begin</div>
+          <div id="randomize" class="button">Randomize</div>
+        </div>
+        <div class="shipyard">
+          <div data-ship-id="0" class="player ship carrier initial-size">Carrier</div>
+          <div data-ship-id="1" class="player ship battleship initial-size">Battleship</div>
+          <div data-ship-id="2" class="player ship cruiser initial-size">Cruiser</div>
+          <div data-ship-id="3" class="player ship submarine initial-size">Submarine</div>
+          <div data-ship-id="4" class="player ship destroyer initial-size">Destroyer</div>
+        </div>
+        <div class="console">
+          <div>Place your ships and click "begin" when ready.</div>
+          <div>WELCOME TO BATTLESHIP</div>
+        </div>
       </div>
-    </div>
-    <div class="commands">
-      <div id="begin" class="button">Begin</div>
-      <div id="randomize" class="button">Randomize</div>
-    </div>
-    <div class="shipyard">
-      <div data-ship-id="0" class="player ship carrier">Aircraft Carrier</div>
-      <div data-ship-id="1" class="player ship battleship">Battleship</div>
-      <div data-ship-id="2" class="player ship cruiser">Cruiser</div>
-      <div data-ship-id="3" class="player ship submarine">Submarine</div>
-      <div data-ship-id="4" class="player ship destroyer">Destroyer</div>
-    </div>
-    <div class="console">
-      <div>Place your ships and click "begin" when ready.</div>
-      <div>WELCOME TO BATTLESHIP</div>
-    </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="battleship.js"></script>

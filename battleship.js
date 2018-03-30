@@ -360,6 +360,12 @@ $(document).ready(function(){
 
   // ties jQuery object elm to move with the mouse cursor
   function move(elm){
+
+    // this class is used to keep the ships "small" until placement has started
+    elm.removeClass("initial-size");
+    // this removes it from the shipyard div so it doesn't mess with page layout
+    elm.css({position: "absolute"});
+
     $(document).on("mousemove", function(w){
       //check if element is rotated, and apply position corrections
       let corr = {xCorr: 0, yCorr: 0};
