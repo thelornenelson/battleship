@@ -30,6 +30,10 @@ $(document).ready(function(){
     randomSetShips(myShips, "player");
   });
 
+  $(".console").on("dblclick", function(){
+    toggleEnemyShips(enemyShips);
+  });
+
   // when player clicks begin, start game if ships are ready, otherwise give further instruction.
   $("#begin").on("click", function(){
     if(areShipsReady(myShips)){
@@ -37,8 +41,7 @@ $(document).ready(function(){
       // this removes the pointer and hover effect
       $(`.player.ship.movable`).removeClass("movable");
 
-      $("#begin").remove();
-      $("#randomize").remove();
+      $(".commands, .shipyard").remove();
       logToTicker("Game On!");
       attack();
     } else {
@@ -119,13 +122,7 @@ $(document).ready(function(){
         });
       }
 
-      if(player === "enemy"){
-        let $ship = makeShip(ship.type, "enemy", ship.angle);
-        // console.log(`fixing enemy ${ship.type}`);
-        console.log(`placed enemy ${ship.type} at position ${ship.position} angle ${ship.angle}`);
-        fix($ship, $(`#enemy-${ship.position}`))
-
-      } else {
+      if(player === "player"){
         // select ship DOM element
         let $ship = $(`.player.ship.${ship.type.toLowerCase()}`)
 
@@ -143,6 +140,24 @@ $(document).ready(function(){
     });
   }
 
+  function toggleEnemyShips(ships){
+
+    // select enemy ships, if any exist in DOM
+    let $ships = $(".enemy.ship");
+    if($ships.length > 0){
+      // if any ships exist, remove them
+      $ships.remove();
+    } else {
+      // otherwise create dom nodes to show ships.
+      ships.forEach(function(ship){
+        let $ship = makeShip(ship.type, "enemy", ship.angle);
+        // console.log(`fixing enemy ${ship.type}`);
+        console.log(`placed enemy ${ship.type} at position ${ship.position} angle ${ship.angle}`);
+        fix($ship, $(`#enemy-${ship.position}`))
+      });
+    }
+  }
+
   function makeShip(type, player, angle){
     let ship = $("<div>");
     ship.addClass(`${player} ship ${type.toLowerCase()}`);
@@ -158,11 +173,14 @@ $(document).ready(function(){
 
     logToTicker("Pick a target square.");
 
+    // $("#enemy-board .board-square").addClass("pointer");
+
     $("#enemy-board").on("click", ".board-square", function(){
       markAttack($(this), enemyShips);
       // console.dir(`Mouse clicked cell ${colTag($(this).data().column)}${$(this).data().row + 1} on enemy board`);
       $("#enemy-board").off("click", null);
       enemyAttack()
+      // $("#enemy-board .board-square").removeClass("pointer");
     });
   }
 
@@ -253,6 +271,9 @@ $(document).ready(function(){
       move(currentShip);
       event.stopPropagation();
       board.on("click", ".board-square", boardClickHandler);
+      $("#rotate").on("click", function(){
+        currentShip.toggleClass("rotate90");
+      });
       $(document).on("keydown", function(event){
         if(event.which == 82){
           currentShip.toggleClass("rotate90");
@@ -394,6 +415,7 @@ $(document).ready(function(){
   function fix(elm, parent){
     $(document).off("mousemove", null);
     $(document).off("keydown", null);
+    $("#rotate").off("click", null);
 
     elm.appendTo(parent);
     elm.removeAttr("style");

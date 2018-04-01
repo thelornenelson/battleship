@@ -1,8 +1,7 @@
 body {
   padding: 0;
   background-color: #dcdfe1;
-
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
 }
 
 .board-square {
@@ -13,6 +12,12 @@ body {
   /* outline-color: #8CB2D8;
   outline-width: 0.5px;
   outline-style: solid; */
+}
+.board-square:hover {
+  outline-color: #8CB2D8;
+  outline-width: 0.5px;
+  outline-style: solid;
+  cursor: pointer;
 }
 
 .board {
@@ -25,7 +30,7 @@ body {
   grid-template-columns: repeat(10, 2.5em);
   grid-auto-rows: 2.5rem;
   grid-gap: 0.2rem;
-  box-shadow: 1px 2px 1px 0px rgba(29,38,87,0.75);
+  box-shadow: 1px 2px 1px 0px rgba(29, 38, 87, 0.75);
 }
 
 .board-header {
@@ -71,6 +76,7 @@ body {
 .battleship {
   width: 9.6rem;
 }
+
 .cruiser {
   width: 6.9rem;
 }
@@ -105,19 +111,19 @@ body {
 .shipyard {
   grid-area: shipyard;
   justify-self: center;
+  height: fit-content;
   border: 1px solid black;
   border-radius: 5px;
   padding: 0rem;
-
+  width: 80%;
+  box-shadow: 1px 2px 1px 0px rgba(29, 38, 87, 0.75);
 }
-
 .shipyard header {
   text-align: center;
   border-radius: 5px 5px 0px 0px;
   border-bottom: 1px solid black;
-  margin-bottom: 1rem;
+  background-color: #03a9f4;
 }
-
 .shipyard .ship.initial-size {
   width: 5rem;
   margin: 0.5rem;
@@ -126,18 +132,19 @@ body {
 .ship.movable {
   cursor: pointer;
 }
+
 .ship.movable:hover {
   background-color: #a8a8a8;
 }
 
 .ship-position {
   position: relative;
-  left:  0.5rem;
-  top:   0rem;
+  left: 0.5rem;
+  top: 0rem;
 }
 
 div {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 .main-grid {
@@ -147,18 +154,16 @@ div {
   display: grid;
   margin: auto;
   grid-template-columns: 120px repeat(2, 1fr);
-  grid-template-areas: "commands player-board enemy-board"
-                        "shipyard player-board enemy-board"
-                        ". console console";
+  grid-template-rows: 200px auto;
+  grid-template-areas: "commands player-board enemy-board" "shipyard player-board enemy-board" ". console console";
 }
-
 
 .console {
   height: 10rem;
   max-height: 10rem;
-  font-family: 'Anonymous Pro', monospace;
+  font-family: "Anonymous Pro", monospace;
   background: #eee3c3;
-  background: linear-gradient(30deg, #f1e7b1 0%,#f9f7e3 100%);
+  background: linear-gradient(30deg, #f1e7b1 0%, #f9f7e3 100%);
   padding: 1em 2em;
   margin: 2em;
   border: solid black 1px;
@@ -166,6 +171,7 @@ div {
   overflow: scroll;
   grid-area: console;
   grid-column-start: 2;
+  box-shadow: 1px 2px 1px 0px rgba(29, 38, 87, 0.75);
 }
 
 .console .important {
@@ -174,10 +180,9 @@ div {
 }
 
 .commands {
-  padding: 5rem 0rem 1rem 1rem;
+  padding: 3rem 1rem 1rem 1rem;
   grid-area: commands;
   justify-self: center;
-
 }
 
 .button {
@@ -189,9 +194,9 @@ div {
   line-height: 2rem;
   border: 1px solid black;
   font-size: 0.9rem;
-  display: inline-block;
   cursor: pointer;
   margin-top: 0.5rem;
+  box-shadow: 1px 2px 1px 0px rgba(29, 38, 87, 0.75);
 }
 
 .button:hover {
@@ -224,9 +229,8 @@ div {
 @media (max-width: 1070px) {
   .main-grid {
     grid-template-columns: 1fr 1fr;
-    grid-template-areas: "player-board enemy-board"
-    "commands shipyard"
-    "console console";
+    grid-template-rows: auto;
+    grid-template-areas: "player-board enemy-board" "shipyard commands" "console console";
   }
 
   .console {
@@ -246,26 +250,9 @@ div {
     justify-self: center;
   }
 }
-
 @media (max-width: 1000px) {
   .main-grid {
     grid-template-columns: 1fr;
-    grid-template-areas: "player-board"
-    "enemy-board"
-    "commands"
-    "shipyard"
-    "console";
+    grid-template-areas: "player-board" "enemy-board" "commands" "shipyard" "console";
   }
-/*
-  .console {
-    grid-column-start: 1;
-  }
-
-  .ship, .button {
-    display: inline-block;
-  }
-
-  .commands {
-    padding-top: 1rem;
-  } */
 }
