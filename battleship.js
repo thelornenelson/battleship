@@ -13,6 +13,9 @@ $(document).ready(function(){
     { type: "Submarine", length: 3, position: null, row: 3, column: 0, angle: 0 },
     { type: "Destroyer", length: 2, position: null, row: 4, column: 0, angle: 0 } ];
 
+  const enemyTargets = [];
+  const nextTarget = null;
+
   // set size of board (boardSize x boardSize squares)
   // accessed directly by many functions.
   let boardSize = 10;
@@ -24,8 +27,7 @@ $(document).ready(function(){
   // initiate player ship placement (allow click and move on ships)
   setPlayerShips($(".ship"), $("#player-board"));
 
-  randomSetShips(enemyShips, "enemy");
-
+  autoSetShips(enemyShips, "enemy");
 
   // enter "cheater mode" when console is triple-clicked;
   $(".console").on("click", function(event){
@@ -42,7 +44,8 @@ $(document).ready(function(){
       $(`.player.ship.movable`).removeClass("movable");
 
       $(".commands, .shipyard").remove();
-      logToTicker("Game On!");
+      logToTicker("Game On! Pick a target square.");
+
       attack();
     } else {
       logToTicker("Hold on, your ships aren't in position");
@@ -51,7 +54,7 @@ $(document).ready(function(){
 
   // Button handler for "randomize"
   $("#randomize").on("click", function(){
-    randomSetShips(myShips, "player");
+    autoSetShips(myShips, "player");
   });
   // ===========
 // ===================== for debugging
@@ -66,9 +69,123 @@ $(document).ready(function(){
   // });
   // ===================
 
+  // logs message to the on-screen "console", for giving instructions or updating on
+  // game progress.
+  function logToTicker(message, important){
+
+    let output = "";
+    let slices = [];
+    let sliceStart = 0;
+    let minWord = 2;
+    let maxWord = 8;
+    let minDelay = 50;
+    let maxDelay = 200;
+    while(sliceStart < message.length){
+      let sliceLength = Math.round((Math.random() * (maxWord - minWord))) + minWord
+      slices.push(message.substring(sliceStart, sliceStart + sliceLength));
+      sliceStart += sliceLength;
+    }
+
+    let $message = $("<div>");
+
+    if(important){
+      $message.addClass("important");
+    }
+    $message.prependTo($(".console"));
+
+    let sliceIndex = 0;
+
+    outputSlice();
+
+    function outputSlice(){
+      if(sliceIndex < slices.length) {
+        let delay = Math.round(Math.random() * (maxDelay - minDelay)) + minDelay;
+        output += slices[sliceIndex];
+        $message.text(output);
+        sliceIndex++;
+        setTimeout(outputSlice, delay);
+      }
+    }
+  }
+
+  // function to handle player's attack turn.
+  function attack(){
+    $("#enemy-board .board-header, #enemy-board .board").addClass("active");
+
+    $("#enemy-board").on("click", ".board-square", function(){
+      let target = $(this).data();
+      let message = `You attack ${getSquareId(target.row, target.column)}`;
+      let attackOutcome = markAttack($(this), enemyShips);
+      if(attackOutcome.hit){
+        message += ` and it's a hit!`;
+        if(attackOutcome.sink){
+          message += ` Enemy ${attackOutcome.sink} sinks!`;
+        }
+      } else {
+        message += ` but there's nothing there!`;
+      }
+      logToTicker(message, attackOutcome.hit);
+      $("#enemy-board").off("click", null);
+      $("#enemy-board .board-header, #enemy-board .board").removeClass("active");
+      window.setTimeout(enemyAttack, 2000);
+    });
+  }
+
+  // when called, AI will determine where to attack, determine result of attack, and plot results of attack on your board.
+  function enemyAttack(){
+    let target = enemyTargets[0];
+    if(!target){
+      // if no targets in sight, pick a random square
+      target = randomSquare();
+    }
+    let message = `Enemy attacks ${getSquareId(target.row, target.column)}`;
+    let attackOutcome = markAttack($(`#player-${getSquareId(target.row, target.column)}`), myShips);
+    if(attackOutcome.sink){
+      // enemy sinks one of your ships
+      message += ` sinking your ${attackOutcome.sink}`;
+
+    } else if(attackOutcome.hit){
+      // enemy get a hit but doesn't sink anything
+      message += ` and hits your ${attackOutcome.hit}!`;
+
+    } else {
+      message += ` but misses!`;
+    }
+    logToTicker(message, attackOutcome.hit);
+    window.setTimeout(attack, 300);
+  }
+
+  // adds enemyTargets for 4 points surrounding a hit, if valid.
+  function setTargetsAfterHit(hitRow, hitColumn){
+
+    let newTargets = [];
+    // down, right, up, left
+    let directions = [{dRow: 1, dColumn: 0}, {dRow: 0, dColumn: 1}, {dRow: -1, dColumn: 0}, {dRow: 0, dColumn: -1}];
+
+    //shuffle directions array to randomize guess directions (Durstenfeld shuffle, in-place)
+    for(let i = directions.length - 1; i > 0; i--) {
+          let j = Math.floor(Math.random() * (i + 1));
+          let temp = directions[i];
+          directions[i] = directions[j];
+          directions[j] = temp;
+    }
+
+    directions.forEach(function(direction){
+      let newTarget = {row: hitRow + direction.dRow, column: hitColumn + direction.dColumn};
+      let rowValid = newTarget.row < boardSize && newTarget.row >= 0;
+      let columnValid = newTarget.column < boardSize && newTarget.column >= 0;
+
+      if(rowValid && columnValid){
+        newTargets.push({row: hitRow + direction.dRow, column: hitColumn + direction.dColumn});
+      }
+    });
+
+    enemyTargets.push(newTargets);
+
+  }
 
   // function to place ships at random on board
-  function randomSetShips(ships, player){
+  function autoSetShips(ships, player){
     let possibleAngles = [0, 90];
     ships.forEach(function(ship, index){
 
@@ -171,30 +288,6 @@ $(document).ready(function(){
     return ship;
   }
 
-  // function to handle player's attack turn.
-  function attack(){
-
-    logToTicker("Pick a target square.");
-
-    // $("#enemy-board .board-square").addClass("pointer");
-
-    $("#enemy-board").on("click", ".board-square", function(){
-      markAttack($(this), enemyShips);
-      // console.dir(`Mouse clicked cell ${colTag($(this).data().column)}${$(this).data().row + 1} on enemy board`);
-      $("#enemy-board").off("click", null);
-
-      window.setTimeout(enemyAttack, 1000);
-    });
-  }
-
-  // when called, AI will determine where to attack, determine result of attack, and plot results of attack on your board.
-  function enemyAttack(){
-    let target = randomSquare();
-    logToTicker(`Enemy attacks ${getSquareId(target.row, target.column)}`);
-    markAttack($(`#player-${getSquareId(target.row, target.column)}`), myShips);
-    window.setTimeout(attack, 1000);
-  }
-
   //marks attack on targetSquare, which should be a jquery element object
   //targetShips is the array of ships, hits are logged to it.
   function markAttack(targetSquare, targetShips){
@@ -202,18 +295,19 @@ $(document).ready(function(){
     if(targetSquare.children(".attacks").length === 0){
       let hasShip = "";
       //check if the target square has a ship node in it and if so, add offset to get mark displayed correctly.
-      if(targetSquare.children(".ship").length){
+      if(targetSquare.children(".ship").length > 0){
         hasShip = "attack-ship-offset";
       }
       let data = targetSquare.data();
       //check to see if there's already an attack marked on the square
       // If not, add new hit or miss
-      if(checkHit(getSquareId(data.row, data.column), targetShips)){
-        console.log("It's a hit!");
+      let attackOutcome = checkHit(getSquareId(data.row, data.column), targetShips);
+      if(attackOutcome.hit){
         $("<div>").text("X").addClass(`attacks hit ${hasShip}`).appendTo(targetSquare);
+        return attackOutcome;
       } else {
-        console.log("Miss!");
         $("<div>").text("O").addClass(`attacks miss ${hasShip}`).appendTo(targetSquare);
+        return attackOutcome;
       }
     }
 
@@ -222,7 +316,7 @@ $(document).ready(function(){
   // check if square (in A1 format) is a hit on any of ships in ships array.
   // if so, mark square true in ship.squares[position]
   function checkHit(position, ships){
-    let result = false;
+    let result = {hit: false, sink: false};
     // console.log("checking for hit on position " + position);
     // console.dir(ships);
     ships.forEach(function(ship){
@@ -245,16 +339,17 @@ $(document).ready(function(){
 
             if(sunk){
               ship.isSunk = true;
-              console.log(`${ship.type} hit in square ${square}, position ${position}, and it sinks!`);
-              logToTicker(`${ship.type} has sunk`, true);
+              result.sink = ship.type;
+              // console.log(`${ship.type} hit in square ${square}, position ${position}, and it sinks!`);
+              // logToTicker(`${ship.type} has sunk`, true);
             }
 
-            console.log(`${ship.type} hit in square ${square}, position ${position}`);
-            result = true;
+            // console.log(`${ship.type} hit in square ${square}, position ${position}`);
+            result.hit = ship.type;
 
           } else {
-            console.log(`Repeat hit on ${ship.type} in square ${square}, position ${position}`)
-            result = false;
+            // console.log(`Repeat hit on ${ship.type} in square ${square}, position ${position}`)
+            result.hit = false;
           }
         }
       }
@@ -264,90 +359,6 @@ $(document).ready(function(){
 
   }
 
-  function setPlayerShips(ships, board){
-    let currentShip = null;
-
-    let shipClickHandler = function(event){
-      console.log(`Handling click on ship ${$(this).data().shipId}`);
-      currentShip = $(this);
-      $(".ship").off("click", null);
-      move(currentShip);
-      event.stopPropagation();
-      board.on("click", ".board-square", boardClickHandler);
-      $("#rotate").on("click", function(){
-        currentShip.toggleClass("rotate90");
-      });
-      $(document).on("keydown", function(event){
-        if(event.which == 82){
-          currentShip.toggleClass("rotate90");
-          console.log(`R key was pressed, rotating ship`);
-        }
-      });
-    };
-
-    let boardClickHandler = function(){
-      if(currentShip){
-        let data = $(this).data();
-        let id = getSquareId(data.row, data.column);
-        myShips[currentShip.data().shipId].position = id;
-        myShips[currentShip.data().shipId].row = data.row;
-        myShips[currentShip.data().shipId].column = data.column;
-        if(currentShip.hasClass("rotate90")){
-          myShips[currentShip.data().shipId].angle = 90;
-        }
-        if(isShipPosValid(myShips[currentShip.data().shipId])){
-          console.log(`placed ${myShips[currentShip.data().shipId].type} in square ${colTag(data.column)}${data.row + 1}`);
-          fix(currentShip, $(this));
-          board.off("click");
-          currentShip = null;
-          ships.on("click", shipClickHandler);
-        }
-      }
-    };
-
-    ships.on("click", shipClickHandler);
-
-    board.on("click", ".board-square", boardClickHandler);
-  }
-
-  // logs message to the on-screen "console", for giving instructions or updating on
-  // game progress.
-  function logToTicker(message, important){
-
-    let output = "";
-    let slices = [];
-    let sliceStart = 0;
-    let minWord = 3;
-    let maxWord = 6;
-    let minDelay = 50;
-    let maxDelay = 200;
-    while(sliceStart < message.length){
-      let sliceLength = Math.round((Math.random() * (maxWord - minWord))) + minWord
-      slices.push(message.substring(sliceStart, sliceStart + sliceLength));
-      sliceStart += sliceLength;
-    }
-
-    let $message = $("<div>");
-
-    if(important){
-      $message.addClass("important");
-    }
-    $message.prependTo($(".console"));
-
-    let sliceIndex = 0;
-
-    outputSlice();
-
-    function outputSlice(){
-      if(sliceIndex < slices.length) {
-        let delay = Math.round(Math.random() * (maxDelay - minDelay)) + minDelay;
-        output += slices[sliceIndex];
-        $message.text(output);
-        sliceIndex++;
-        setTimeout(outputSlice, delay);
-      }
-    }
-  }
 
   // checks whether all ships are in valid position.
   function areShipsReady(ships){
@@ -408,6 +419,53 @@ $(document).ready(function(){
     }
   }
 
+  // allows player to place ships by selecting ship and clicking to place on board
+  function setPlayerShips(ships, board){
+    let currentShip = null;
+
+    let shipClickHandler = function(event){
+      console.log(`Handling click on ship ${$(this).data().shipId}`);
+      currentShip = $(this);
+      $(".ship").off("click", null);
+      move(currentShip);
+      event.stopPropagation();
+      board.on("click", ".board-square", boardClickHandler);
+      $("#rotate").on("click", function(){
+        currentShip.toggleClass("rotate90");
+      });
+      $(document).on("keydown", function(event){
+        if(event.which == 82){
+          currentShip.toggleClass("rotate90");
+          console.log(`R key was pressed, rotating ship`);
+        }
+      });
+    };
+
+    let boardClickHandler = function(){
+      if(currentShip){
+        let data = $(this).data();
+        let id = getSquareId(data.row, data.column);
+        myShips[currentShip.data().shipId].position = id;
+        myShips[currentShip.data().shipId].row = data.row;
+        myShips[currentShip.data().shipId].column = data.column;
+        if(currentShip.hasClass("rotate90")){
+          myShips[currentShip.data().shipId].angle = 90;
+        }
+        if(isShipPosValid(myShips[currentShip.data().shipId])){
+          console.log(`placed ${myShips[currentShip.data().shipId].type} in square ${colTag(data.column)}${data.row + 1}`);
+          fix(currentShip, $(this));
+          board.off("click");
+          currentShip = null;
+          ships.on("click", shipClickHandler);
+        }
+      }
+    };
+
+    ships.on("click", shipClickHandler);
+
+    board.on("click", ".board-square", boardClickHandler);
+  }
+
   // return offset corrections to shift ship to cursor when rotated
   function calcRotationPositionCorr(elm){
     return {xCorr: elm.width() / -2, yCorr: elm.width() / 2 };
@@ -438,7 +496,7 @@ $(document).ready(function(){
     });
   }
 
-  // fixes element at current position by appending to parent and unbinds mousemove event
+  // fixes element by appending to parent and unbinds mousemove event
   function fix(elm, parent){
     $(document).off("mousemove", null);
     $(document).off("keydown", null);
@@ -469,7 +527,7 @@ $(document).ready(function(){
     }
   }
 
-  // created div elements for size x size board and replaces elm with newly generated board
+  // creates div elements for boardSize x boardSize board and replaces placeholder elm with newly generated board
   function createBoard(elm, idPrefix){
     let board = $("<div>").addClass("board").css({"grid-template-columns": `repeat(${boardSize}, 2.5em)`});
     for(let i = 0; i < boardSize; i++){
@@ -496,13 +554,13 @@ $(document).ready(function(){
 
   // returns square ID in A1, B5, C10, etc format.
   function getSquareId(row, column){
-    return `${colTag(column)}${row + 1}`
+    return `${colTag(column)}${row + 1}`;
   }
 
   // returns an object of format {row: [0-boardSize), column: [0-boardSize)}
   // where row and column values are picked randomly.
-  // optional paramters will place randomly within a limited area (handy for placing ships with known length)
-  // maxRow and maxColumn are 0 indexed
+  // optional parameters will place randomly within a limited area (handy for placing ships with known length)
+  // maxRow and maxColumn are 0 indexed, so maxRow 9, maxColumn 9 will place anywhere on a 10 x 10 board;
   function randomSquare(maxRow, maxColumn){
     const square = { row: null, column: null };
 
