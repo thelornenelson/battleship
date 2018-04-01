@@ -26,15 +26,15 @@ $(document).ready(function(){
 
   randomSetShips(enemyShips, "enemy");
 
-  $("#randomize").on("click", function(){
-    randomSetShips(myShips, "player");
+
+  // enter "cheater mode" when console is triple-clicked;
+  $(".console").on("click", function(event){
+    if(event.detail == 3){
+      toggleEnemyShips(enemyShips);
+    }
   });
 
-  $(".console").on("dblclick", function(){
-    toggleEnemyShips(enemyShips);
-  });
-
-  // when player clicks begin, start game if ships are ready, otherwise give further instruction.
+  // Button handler for "begin", start game if ships are ready, otherwise give further instruction.
   $("#begin").on("click", function(){
     if(areShipsReady(myShips)){
       areShipsReady(enemyShips);
@@ -49,12 +49,10 @@ $(document).ready(function(){
     }
   });
 
-  // testing attack stuff =====
-  // areShipsReady(enemyShips);
-  // // console.dir(enemyShips);
-  // attack();
-  // testing randomSquare();
-
+  // Button handler for "randomize"
+  $("#randomize").on("click", function(){
+    randomSetShips(myShips, "player");
+  });
   // ===========
 // ===================== for debugging
   // $("#player-board").on("click", ".board-square", function(){
@@ -146,6 +144,9 @@ $(document).ready(function(){
     let $ships = $(".enemy.ship");
     if($ships.length > 0){
       // if any ships exist, remove them
+      ships.forEach(function(ship){
+        $(`#enemy-${ship.position} .attacks`).removeClass("attack-ship-offset");
+      });
       $ships.remove();
     } else {
       // otherwise create dom nodes to show ships.
@@ -153,11 +154,13 @@ $(document).ready(function(){
         let $ship = makeShip(ship.type, "enemy", ship.angle);
         // console.log(`fixing enemy ${ship.type}`);
         console.log(`placed enemy ${ship.type} at position ${ship.position} angle ${ship.angle}`);
+        $(`#enemy-${ship.position} .attacks`).addClass("attack-ship-offset");
         fix($ship, $(`#enemy-${ship.position}`))
       });
     }
   }
 
+  // creates and returns a jQuery element to represent a ship as described by the parameters passed
   function makeShip(type, player, angle){
     let ship = $("<div>");
     ship.addClass(`${player} ship ${type.toLowerCase()}`);
@@ -179,17 +182,17 @@ $(document).ready(function(){
       markAttack($(this), enemyShips);
       // console.dir(`Mouse clicked cell ${colTag($(this).data().column)}${$(this).data().row + 1} on enemy board`);
       $("#enemy-board").off("click", null);
-      enemyAttack()
-      // $("#enemy-board .board-square").removeClass("pointer");
+
+      window.setTimeout(enemyAttack, 1000);
     });
   }
 
   // when called, AI will determine where to attack, determine result of attack, and plot results of attack on your board.
   function enemyAttack(){
-    let target = randomSquare(6,6);
+    let target = randomSquare();
     logToTicker(`Enemy attacks ${getSquareId(target.row, target.column)}`);
     markAttack($(`#player-${getSquareId(target.row, target.column)}`), myShips);
-    attack();
+    window.setTimeout(attack, 1000);
   }
 
   //marks attack on targetSquare, which should be a jquery element object
@@ -310,16 +313,40 @@ $(document).ready(function(){
   // logs message to the on-screen "console", for giving instructions or updating on
   // game progress.
   function logToTicker(message, important){
-    // let slices = [];
-    // let end = 0;
-    // while(end < message.length){
-    //   let snipLength = 1 + (Math.random() * 5
-    // }
-    let $message = $("<div>").text(message);
+
+    let output = "";
+    let slices = [];
+    let sliceStart = 0;
+    let minWord = 3;
+    let maxWord = 6;
+    let minDelay = 50;
+    let maxDelay = 200;
+    while(sliceStart < message.length){
+      let sliceLength = Math.round((Math.random() * (maxWord - minWord))) + minWord
+      slices.push(message.substring(sliceStart, sliceStart + sliceLength));
+      sliceStart += sliceLength;
+    }
+
+    let $message = $("<div>");
+
     if(important){
       $message.addClass("important");
     }
     $message.prependTo($(".console"));
+
+    let sliceIndex = 0;
+
+    outputSlice();
+
+    function outputSlice(){
+      if(sliceIndex < slices.length) {
+        let delay = Math.round(Math.random() * (maxDelay - minDelay)) + minDelay;
+        output += slices[sliceIndex];
+        $message.text(output);
+        sliceIndex++;
+        setTimeout(outputSlice, delay);
+      }
+    }
   }
 
   // checks whether all ships are in valid position.
@@ -417,8 +444,16 @@ $(document).ready(function(){
     $(document).off("keydown", null);
     $("#rotate").off("click", null);
 
-    elm.appendTo(parent);
+    if(parent.children(".attacks").length){
+      elm.insertBefore(parent.children(".attacks").first())
+    } else {
+      elm.appendTo(parent);
+    }
+
+
+    // remove any previous in-line css (ie from previous placements)
     elm.removeAttr("style");
+
 
     if(elm.hasClass("rotate90")){
       let corr = calcRotationPositionCorr(elm);
@@ -439,6 +474,10 @@ $(document).ready(function(){
     let board = $("<div>").addClass("board").css({"grid-template-columns": `repeat(${boardSize}, 2.5em)`});
     for(let i = 0; i < boardSize; i++){
       for(let j = 0; j < boardSize; j++){
+        // let currentSquare = $("<div>").attr("id", `${idPrefix}${colTag(j)}${i + 1}`).data({column: j, row: i}).addClass("board-square")
+        // $("<span>").text(`${colTag(j)}${i + 1}`).appendTo(currentSquare);
+        // currentSquare.appendTo(board);
+
         $("<div>").attr("id", `${idPrefix}${colTag(j)}${i + 1}`).text(`${colTag(j)}${i + 1}`).data({column: j, row: i}).addClass("board-square").appendTo(board);
       }
     }
