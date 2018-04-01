@@ -1,6 +1,7 @@
 body {
   padding: 0;
-  background-color: #dcdfe1;
+  background: #56ccf2;
+  background: linear-gradient(15deg, #56ccf2, #2f80ed);
   font-family: "Roboto", sans-serif;
 }
 
@@ -46,7 +47,7 @@ body {
   line-height: 1.5rem;
   text-align: center;
   width: 50%;
-  background-color: #03a9f4;
+  background-color: #a2bec8;
   border: 1px solid black;
   border-radius: 5px 5px 0px 0px;
   border-bottom: none;
@@ -123,12 +124,13 @@ body {
   padding: 0rem;
   width: 80%;
   box-shadow: 1px 2px 1px 0px rgba(29, 38, 87, 0.75);
+  background-color: #ddd;
 }
 .shipyard header {
   text-align: center;
   border-radius: 5px 5px 0px 0px;
   border-bottom: 1px solid black;
-  background-color: #03a9f4;
+  background-color: #a2bec8;
 }
 .shipyard .ship.initial-size {
   width: 5rem;
@@ -195,7 +197,7 @@ div {
   height: 2rem;
   width: 5rem;
   border-radius: 5px;
-  background-color: #03a9f4;
+  background-color: #a2bec8;
   text-align: center;
   line-height: 2rem;
   border: 1px solid black;
@@ -206,7 +208,7 @@ div {
 }
 
 .button:hover {
-  background-color: #43bdf3;
+  background-color: #c2d4db;
 }
 
 .hit {

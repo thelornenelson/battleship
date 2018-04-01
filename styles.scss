@@ -2,18 +2,28 @@ $border-color: black;
 $board-active: #c43939;
 $border-radius-big: 0.6rem;
 $border-radius-small: 5px;
-$highlight: #03a9f4;
 $box-shadow: 1px 2px 1px 0px rgba(29,38,87,0.75);
+$light-background: #ddd;
+$highlight: #a2bec8;
+$board-background: grey;
 
 // #0e2131 dark blue potential background?
 
 
 body {
   padding: 0;
-  background-color: #dcdfe1;
-
+  background: #56ccf2;
+  background: linear-gradient(15deg, #56ccf2, #2f80ed);
+  // background: linear-gradient(to bottom, #0e2131 0%,#193c59 39%,#477099 60%,#060f16 100%);
   font-family: 'Roboto', sans-serif;
 }
+
+// div.main-bg {
+//   background: linear-gradient(to bottom, #0e2131 0%,#193c59 39%,#477099 60%,#060f16 100%);
+//   opacity: 0;
+//   z-index: 0;
+//
+// }
 
 .board-square {
   background-color: #3F7FBF;
@@ -40,7 +50,7 @@ body {
   border: solid $border-color 1px;
   padding: 10px;
   width: fit-content;
-  background-color: grey;
+  background-color: $board-background;
   display: grid;
   grid-template-columns: repeat(10, 2.5em);
   grid-auto-rows: 2.5rem;
@@ -139,6 +149,7 @@ body {
   padding: 0rem;
   width: 80%;
   box-shadow: $box-shadow;
+  background-color: $light-background;
 
   header {
     text-align: center;
@@ -227,7 +238,7 @@ div {
 }
 
 .button:hover {
-  background-color: #43bdf3;
+  background-color: lighten($highlight, 10%);
 }
 
 .hit {
