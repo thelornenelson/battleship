@@ -289,7 +289,11 @@ $(document).ready(function(){
   // logs message to the on-screen "console", for giving instructions or updating on
   // game progress.
   function logToTicker(message, important){
-
+    // let slices = [];
+    // let end = 0;
+    // while(end < message.length){
+    //   let snipLength = 1 + (Math.random() * 5
+    // }
     let $message = $("<div>").text(message);
     if(important){
       $message.addClass("important");
