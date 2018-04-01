@@ -14,7 +14,7 @@ $(document).ready(function(){
     { type: "Destroyer", length: 2, position: null, row: 4, column: 0, angle: 0 } ];
 
   const enemyTargets = [];
-  const nextTarget = null;
+  const enemyGuesses = [];
 
   // set size of board (boardSize x boardSize squares)
   // accessed directly by many functions.
@@ -78,8 +78,8 @@ $(document).ready(function(){
     let sliceStart = 0;
     let minWord = 2;
     let maxWord = 8;
-    let minDelay = 50;
-    let maxDelay = 200;
+    let minDelay = 2;
+    let maxDelay = 10;
     while(sliceStart < message.length){
       let sliceLength = Math.round((Math.random() * (maxWord - minWord))) + minWord
       slices.push(message.substring(sliceStart, sliceStart + sliceLength));
@@ -127,32 +127,58 @@ $(document).ready(function(){
       logToTicker(message, attackOutcome.hit);
       $("#enemy-board").off("click", null);
       $("#enemy-board .board-header, #enemy-board .board").removeClass("active");
-      window.setTimeout(enemyAttack, 2000);
+      window.setTimeout(enemyAttack, 1);
     });
   }
 
   // when called, AI will determine where to attack, determine result of attack, and plot results of attack on your board.
   function enemyAttack(){
-    let target = enemyTargets[0];
-    if(!target){
-      // if no targets in sight, pick a random square
-      target = randomSquare();
-    }
+    let target = undefined;
+    let knownTarget = false;
+    if(enemyTargets[0]){
+      // if any targets defined, set target to the next target in queue
+      // enemyTargets[0] is always the next target search (set of up to 4 directions to search in);
+      // enemyTargets[0][0] is the first direction to try
+      // enemyTargets[0][0][0] is the first target to try.
+      // targets or target directions will be removed as tried or proven invalid to keep the [0][0][0] item current.
+      target = enemyTargets[0][0][0];
+      console.log(`next target, from enemyTargets, is ${getSquareId(target.row, target.column)}`);
+      // target is object of form {row: row, column: column};
+      knownTarget = true;
+    } else {
+      target = randomSquare(undefined, undefined, enemyGuesses);
+      console.log(`Targeting random square ${getSquareId(target.row, target.column)}`);
+    };
+
     let message = `Enemy attacks ${getSquareId(target.row, target.column)}`;
+    enemyGuesses.push(target);
     let attackOutcome = markAttack($(`#player-${getSquareId(target.row, target.column)}`), myShips);
     if(attackOutcome.sink){
       // enemy sinks one of your ships
+      // remove current targeting strategy;
+      enemyTargets.shift();
       message += ` sinking your ${attackOutcome.sink}`;
 
     } else if(attackOutcome.hit){
+      if(!knownTarget){
+        setTargetsAfterHit(target.row, target.column);
+      } else {
+        // shifts next target to enemyTarget[0][0][0]
+        enemyTargets[0][0].shift();
+      }
       // enemy get a hit but doesn't sink anything
       message += ` and hits your ${attackOutcome.hit}!`;
 
     } else {
+      if(knownTarget){
+        // if we targetted a specific direction but missed
+        // shifts next target direction to enemyTargets[0][0]
+        enemyTargets[0].shift();
+      }
       message += ` but misses!`;
     }
     logToTicker(message, attackOutcome.hit);
-    window.setTimeout(attack, 300);
+    window.setTimeout(attack, 1);
   }
 
   // adds enemyTargets for 4 points surrounding a hit, if valid.
@@ -170,16 +196,41 @@ $(document).ready(function(){
           directions[j] = temp;
     }
 
-    directions.forEach(function(direction){
-      let newTarget = {row: hitRow + direction.dRow, column: hitColumn + direction.dColumn};
-      let rowValid = newTarget.row < boardSize && newTarget.row >= 0;
-      let columnValid = newTarget.column < boardSize && newTarget.column >= 0;
+    let nextTargetsIndex = 0;
+    directions.forEach(function(direction, index){
+      let anyValidTargets = false;
+      let rowValid = true;
+      let columnValid = true;
+      let previousTarget = {row: hitRow, column: hitColumn};
+      while(rowValid && columnValid){
 
-      if(rowValid && columnValid){
-        newTargets.push({row: hitRow + direction.dRow, column: hitColumn + direction.dColumn});
+        let newTarget = {row: previousTarget.row + direction.dRow, column: previousTarget.column + direction.dColumn};
+        previousTarget = {row: newTarget.row, column: newTarget.column};
+
+        rowValid = newTarget.row < boardSize && newTarget.row >= 0;
+        columnValid = newTarget.column < boardSize && newTarget.column >= 0;
+
+         // this is a bit of a hack but will check against previous guesses and skip direction if there's already a guess
+        enemyGuesses.forEach(function(excludedSquare){
+          if(newTarget.row === excludedSquare.row && newTarget.column === excludedSquare.column){
+            rowValid = false;
+            columnValid = false;
+          }
+        });
+
+        if(rowValid && columnValid){
+          anyValidTargets = true;
+          if(!newTargets[nextTargetsIndex]){
+            newTargets[nextTargetsIndex] = [];
+          }
+          newTargets[nextTargetsIndex].push(newTarget);
+        }
       }
-    });
+      if(anyValidTargets) {
+        nextTargetsIndex++;
+      }
 
+    });
     enemyTargets.push(newTargets);
 
   }
@@ -561,11 +612,24 @@ $(document).ready(function(){
   // where row and column values are picked randomly.
   // optional parameters will place randomly within a limited area (handy for placing ships with known length)
   // maxRow and maxColumn are 0 indexed, so maxRow 9, maxColumn 9 will place anywhere on a 10 x 10 board;
-  function randomSquare(maxRow, maxColumn){
+  // optional exclude array of objects in form {row: row, column: column} to exclude squares from random selection.
+  function randomSquare(maxRow, maxColumn, exclude){
     const square = { row: null, column: null };
+    let allowed = false;
 
-    square.row = Math.floor(Math.random() * ((maxRow + 1) || boardSize));
-    square.column = Math.floor(Math.random() * ((maxColumn + 1) || boardSize));
+    while(!allowed){
+      allowed = true;
+      square.row = Math.floor(Math.random() * ((maxRow + 1) || boardSize));
+      square.column = Math.floor(Math.random() * ((maxColumn + 1) || boardSize));
+      console.log(`Exclude = `, exclude);
+      if(exclude){
+        exclude.forEach(function(excludedSquare){
+          if(square.row === excludedSquare.row && square.column === excludedSquare.column){
+            allowed = false;
+          }
+        });
+      }
+    }
 
     return square;
   }
