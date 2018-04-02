@@ -71,7 +71,7 @@ $(document).ready(function(){
     let maxDelay = 200;
 
     while(sliceStart < message.length){
-      let sliceLength = Math.round((Math.random() * (maxWord - minWord))) + minWord
+      let sliceLength = Math.round((Math.random() * (maxWord - minWord))) + minWord;
       slices.push(message.substring(sliceStart, sliceStart + sliceLength));
       sliceStart += sliceLength;
     }
@@ -154,7 +154,7 @@ $(document).ready(function(){
     enemyGuesses.push(target);
 
     let attackOutcome = markAttack($(`#player-${getSquareId(target.row, target.column)}`), myShips);
-    
+
     if(attackOutcome.sink){
       // enemy sinks one of your ships
       // remove current targeting strategy;
@@ -220,7 +220,7 @@ $(document).ready(function(){
         rowValid = newTarget.row < boardSize && newTarget.row >= 0;
         columnValid = newTarget.column < boardSize && newTarget.column >= 0;
 
-         // this is a bit of a hack but will check against previous guesses and skip direction if there's already a guess
+        // this is a bit of a hack but will check against previous guesses and skip direction if there's already a guess
         enemyGuesses.forEach(function(excludedSquare){
           if(newTarget.row === excludedSquare.row && newTarget.column === excludedSquare.column){
             rowValid = false;
@@ -309,7 +309,7 @@ $(document).ready(function(){
 
       if(player === "player"){
         // select ship DOM element
-        let $ship = $(`.player.ship.${ship.type.toLowerCase()}`)
+        let $ship = $(`.player.ship.${ship.type.toLowerCase()}`);
 
         // remove any previous rotation class
         $ship.removeClass("rotate90");
@@ -339,7 +339,7 @@ $(document).ready(function(){
       ships.forEach(function(ship){
         let $ship = makeShip(ship.type, "enemy", ship.angle);
         $(`#enemy-${ship.position} .attacks`).addClass("attack-ship-offset");
-        fix($ship, $(`#enemy-${ship.position}`))
+        fix($ship, $(`#enemy-${ship.position}`));
       });
     }
   }
@@ -442,12 +442,12 @@ $(document).ready(function(){
       return false;
     } else if(ship.angle === 0){
       if((ship.column + ship.length) <= boardSize){
-        addShipSquares()
+        addShipSquares();
         return true;
       }
     } else if(ship.angle === 90){
       if((ship.row + ship.length) <= boardSize){
-        addShipSquares()
+        addShipSquares();
         return true;
       }
     } else {
@@ -468,7 +468,7 @@ $(document).ready(function(){
       ship.squares = {};
       if(ship.angle === 0){
         for(let colOffset = 0; colOffset < ship.length; colOffset++){
-          ship.squares[getSquareId(ship.row, ship.column + colOffset,)] = false;
+          ship.squares[getSquareId(ship.row, ship.column + colOffset)] = false;
         }
       } else if(ship.angle === 90){
         for(let rowOffset = 0; rowOffset < ship.length; rowOffset++){
@@ -540,9 +540,9 @@ $(document).ready(function(){
       }
       elm.removeClass("ship-position");
       elm.css({
-         position: "absolute",
-         left:  w.pageX + corr.xCorr,
-         top:   w.pageY + corr.yCorr
+        position: "absolute",
+        left:  w.pageX + corr.xCorr,
+        top:   w.pageY + corr.yCorr
       });
     });
   }
@@ -554,7 +554,7 @@ $(document).ready(function(){
     $("#rotate").off("click", null);
 
     if(parent.children(".attacks").length){
-      elm.insertBefore(parent.children(".attacks").first())
+      elm.insertBefore(parent.children(".attacks").first());
     } else {
       elm.appendTo(parent);
     }
