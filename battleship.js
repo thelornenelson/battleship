@@ -30,7 +30,7 @@ $(document).ready(function(){
   // returns the display letter associated with column number.
   function colTag(column){
     const tags = "ABCDEFHIJKLMNOPQRSTUVWXYZ";
-    if(column > 25){
+    if(column > (tags.length - 1)){
       return undefined;
     } else {
       return tags.charAt(column);
@@ -315,7 +315,7 @@ $(document).ready(function(){
 
   // when called, AI will determine where to attack, determine result of attack, and plot results of attack on your board.
   function enemyAttack(){
-    let target = undefined;
+    let target;
     let knownTarget = false;
     if(enemyTargets[0]){
       // if any targets defined, set target to the next target in queue
