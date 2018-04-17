@@ -1,0 +1,26 @@
+{
+  "name": "battleship",
+  "version": "1.0.0",
+  "description": "A browser based re-imagining of the classic game, with CSS and jQuery.",
+  "main": "battleship.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thelornenelson/battleship.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thelornenelson/battleship/issues"
+  },
+  "homepage": "https://github.com/thelornenelson/battleship#readme",
+  "devDependencies": {
+    "eslint-config-lighthouselabs": "github:lighthouse-labs/eslint-config-lighthouselabs"
+  },
+  "dependencies": {
+    "eslint": "^3.19.0"
+  }
+}

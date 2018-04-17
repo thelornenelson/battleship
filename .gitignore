@@ -1,3 +1,4 @@
 /project-requirements
+/node_modules
 .DS_store
 testrandom.js
