@@ -10,6 +10,7 @@ Built as an extra challenge project as part of the Lighthouse Labs web developme
 - Ship can be positioned with mouse, and rotated by pushing `r` or clicking the `rotate` button.
 - Ships can be placed randomly with `randomize` button
 - Enemy will guess at random until something is hit, then will use somewhat intelligent guessing to narrow in on the target.
+- Game stats: after you've started at least 1 game, your wins/loss stats will be displayed in the ticker.
 - Launch a recon plane: triple-click the on-screen console and the enemy ships will be displayed. Triple-click again to hide.
 
 ## Getting Started
