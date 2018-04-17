@@ -20,6 +20,12 @@ $(document).ready(function(){
   // accessed directly by many functions.
   let boardSize = 10;
 
+  let wins = Number( localStorage.getItem("battleshipWins") || 0 );
+  let losses = Number( localStorage.getItem("battleshipLosses") || 0 );
+  let gameStarts = Number( localStorage.getItem("battleshipStarts") || 0 );
+
+  let gameStartsPlural = gameStarts === 1 ? "" : "s";
+
 
   // returns the display letter associated with column number.
   function colTag(column){
@@ -621,11 +627,7 @@ $(document).ready(function(){
   });
 
 
-  let wins = Number( localStorage.getItem("battleshipWins") || 0 );
-  let losses = Number( localStorage.getItem("battleshipLosses") || 0 );
-  let gameStarts = Number( localStorage.getItem("battleshipStarts") || 0 );
-  
-  let gameStartsPlural = gameStarts === 1 ? "" : "s";
+
 
   if(gameStarts > 0){
     logToTicker(`You've started ${gameStarts} game${gameStartsPlural},  winning ${wins}, and losing ${losses}.`);
