@@ -299,6 +299,7 @@ $(document).ready(function(){
         $("#enemy-board .board-header, #enemy-board .board").removeClass("active");
         if(areAllSunk(enemyShips)){
           window.setTimeout(logToTicker, 1500, `You Win!`, true);
+          localStorage.setItem("battleshipWins", wins + 1);
         } else {
           window.setTimeout(enemyAttack, 2000);
         }
@@ -366,6 +367,7 @@ $(document).ready(function(){
 
     if(areAllSunk(myShips)){
       logToTicker(`The Enemy has sunk your ships! Game Over!`, true);
+      localStorage.setItem("battleshipLosses", losses + 1);
     } else {
       window.setTimeout(attack, 1);
     }
@@ -593,9 +595,6 @@ $(document).ready(function(){
     let board = $("<div>").addClass("board").css({"grid-template-columns": `repeat(${boardSize}, 2.5em)`});
     for(let i = 0; i < boardSize; i++){
       for(let j = 0; j < boardSize; j++){
-        // let currentSquare = $("<div>").attr("id", `${idPrefix}${colTag(j)}${i + 1}`).data({column: j, row: i}).addClass("board-square")
-        // $("<span>").text(`${colTag(j)}${i + 1}`).appendTo(currentSquare);
-        // currentSquare.appendTo(board);
 
         $("<div>").attr("id", `${idPrefix}${colTag(j)}${i + 1}`).text(`${colTag(j)}${i + 1}`).data({column: j, row: i}).addClass("board-square").appendTo(board);
       }
@@ -621,6 +620,19 @@ $(document).ready(function(){
     }
   });
 
+
+  let wins = Number( localStorage.getItem("battleshipWins") || 0 );
+  let losses = Number( localStorage.getItem("battleshipLosses") || 0 );
+  let gameStarts = Number( localStorage.getItem("battleshipStarts") || 0 );
+  
+  let gameStartsPlural = gameStarts === 1 ? "" : "s";
+
+  if(gameStarts > 0){
+    logToTicker(`You've started ${gameStarts} game${gameStartsPlural},  winning ${wins}, and losing ${losses}.`);
+  }
+
+  logToTicker(`Place your ships and click "begin" when ready.`);
+
   // Button handler for "begin", start game if ships are ready, otherwise give further instruction.
   $("#begin").on("click", function(){
     if(areShipsReady(myShips)){
@@ -630,7 +642,7 @@ $(document).ready(function(){
 
       $(".commands, .shipyard").remove();
       logToTicker("Game On! Pick a target square.");
-
+      localStorage.setItem("battleshipStarts", gameStarts + 1);
       attack();
     } else {
       logToTicker("Hold on, your ships aren't in position");
