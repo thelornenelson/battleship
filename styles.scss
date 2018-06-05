@@ -205,7 +205,7 @@ div {
   margin: 2em;
   border: solid $border-color 1px;
   border-radius: 10px 35px 0 0;
-  overflow: scroll;
+  overflow: auto;
   grid-area: console;
   grid-column-start: 2;
   box-shadow: $box-shadow;
